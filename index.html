@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>おうちの天井 — 家という資産のいま｜osakenpiro</title>
+<meta name="description" content="「買い時？」を◯✗で決めない。住まいを資産（ストック）として見るデータ一枚。わたしのお財布（フロー）の対。">
+<meta property="og:title" content="おうちの天井 — 家という資産のいま">
+<meta property="og:description" content="価格は最高値圏。出来高は減り、金利は上昇。家を資産として見るデータドリブン一枚。Boolean→Float。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://osakenpiro.github.io/ouchi-no-tenjo/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Zen+Old+Mincho:wght@700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0e1a; --void2:#0c1120;
+    --surface:#131a2e; --surface2:#1a2340; --raise:#23305480;
+    --ink:#eaeefa; --dim:#9ba7c7; --faint:#69739a;
+    --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.15);
+    --float:#3d86db; --float-deep:#2f63ad;
+    --orbit:#e6ad4d;
+    --teal:#21a37a; --coral:#e2683a; --violet:#6f66db; --pink:#d8568a; --red:#e44b4a; --grey:#8b8a86;
+    --mono:"Space Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"Zen Kaku Gothic New",system-ui,sans-serif;
+    --serif:"Zen Old Mincho",serif;
+    --maxw:720px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:
+      radial-gradient(1200px 600px at 78% -8%, #16203f 0%, transparent 55%),
+      radial-gradient(900px 500px at 0% 100%, #131a33 0%, transparent 50%),
+      var(--void);
+    color:var(--ink); font-family:var(--sans); line-height:1.85;
+    font-size:16px; letter-spacing:.01em; padding:0 18px 64px;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto}
+  .mono{font-family:var(--mono);font-feature-settings:"tnum"}
+  .eyebrow{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.26em;
+    text-transform:uppercase;color:var(--orbit);font-weight:700;
+  }
+  .num{font-family:var(--mono);font-weight:700;font-feature-settings:"tnum"}
+
+  /* ── HERO ── */
+  .hero{position:relative;padding:54px 0 30px}
+  .ceil{display:flex;align-items:center;gap:14px;margin-bottom:30px}
+  .ceil-line{flex:1;height:2px;background:
+    repeating-linear-gradient(90deg,var(--line2) 0 14px,transparent 14px 22px)}
+  .ceil-tag{
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.24em;
+    color:var(--dim);text-transform:uppercase;white-space:nowrap;
+    display:flex;align-items:center;gap:7px
+  }
+  .ceil-tag::before{content:"";width:7px;height:7px;border-radius:50%;
+    background:var(--orbit);box-shadow:0 0 12px var(--orbit);animation:pulse 3.4s ease-in-out infinite}
+  .hero-head{display:flex;align-items:flex-start;gap:18px}
+  .hero-title{
+    font-family:var(--serif);font-weight:900;line-height:1.02;
+    font-size:clamp(2.7rem,11vw,4.6rem);letter-spacing:.01em;
+  }
+  .hero-title .gloss{
+    display:block;font-family:var(--mono);font-weight:400;
+    font-size:.9rem;letter-spacing:.34em;color:var(--faint);
+    margin-top:12px;text-transform:lowercase
+  }
+  .vstrip{
+    writing-mode:vertical-rl;font-family:var(--serif);font-weight:700;
+    font-size:1.05rem;letter-spacing:.34em;color:var(--float);
+    opacity:.85;padding-top:6px;white-space:nowrap;
+  }
+  .lede{margin-top:24px;font-size:1.08rem;color:var(--ink)}
+  .lede b{color:var(--orbit);font-weight:700}
+  .pair{
+    margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;
+    font-size:.92rem;color:var(--dim)
+  }
+  .pair .chip{
+    border:1px solid var(--line2);border-radius:6px;padding:9px 13px;
+    display:flex;align-items:center;gap:9px;background:#ffffff05
+  }
+  .pair .chip b{color:var(--ink);font-weight:700}
+  .pair .chip.flow b{color:var(--teal)} .pair .chip.stock b{color:var(--orbit)}
+  .pair .arrow{color:var(--faint);font-family:var(--mono)}
+
+  /* ── GAUGE (signature) ── */
+  .gauge{
+    margin:36px 0 8px;border:1px solid var(--line2);border-radius:6px;
+    background:linear-gradient(180deg,#1a2340 0%,#141b30 100%);
+    padding:24px 20px 22px;position:relative;overflow:hidden
+  }
+  .gauge::after{content:"";position:absolute;inset:0;border-radius:6px;
+    box-shadow:inset 0 0 40px #3d86db14;pointer-events:none}
+  .gauge-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+  .gauge-label{font-size:.86rem;color:var(--dim)}
+  .gauge-label .k{color:var(--orbit);font-weight:700}
+  .gauge-score{font-family:var(--mono);font-weight:700;line-height:.9;
+    font-size:clamp(3rem,15vw,4.6rem);
+    background:linear-gradient(90deg,var(--orbit),var(--coral));
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .gauge-score small{font-size:1.1rem;color:var(--faint);
+    -webkit-text-fill-color:var(--faint);margin-left:4px}
+  .bar-wrap{margin-top:18px}
+  .bar-track{position:relative;height:18px;border-radius:9px;
+    background:linear-gradient(90deg,var(--float) 0%,var(--orbit) 52%,var(--red) 100%);
+    box-shadow:inset 0 0 0 1px #ffffff14}
+  .bar-mark{position:absolute;top:-8px;bottom:-8px;width:3px;left:76%;
+    background:var(--ink);border-radius:2px;
+    box-shadow:0 0 0 2px var(--void),0 0 14px #ffffffaa;animation:tayutai 5s ease-in-out infinite}
+  .bar-mark::after{content:"0.76";position:absolute;top:-22px;left:50%;
+    transform:translateX(-50%);font-family:var(--mono);font-size:.72rem;
+    font-weight:700;color:var(--ink);background:var(--void2);
+    border:1px solid var(--line2);border-radius:4px;padding:1px 5px;white-space:nowrap}
+  .bar-scale{display:flex;justify-content:space-between;margin-top:12px;
+    font-family:var(--mono);font-size:.66rem;color:var(--faint);letter-spacing:.1em}
+  .bar-zones{display:flex;margin-top:5px;font-size:.66rem;color:var(--dim);text-align:center}
+  .bar-zones span{flex:1}
+  .bar-zones .hot{color:var(--coral);font-weight:700}
+  .gauge-note{margin-top:16px;font-size:.86rem;color:var(--dim);
+    border-left:2px solid var(--float);padding-left:12px}
+  .gauge-note b{color:var(--ink)}
+  .caveat{margin-top:12px;font-size:.82rem;color:var(--orbit);
+    background:#e6ad4d12;border:1px solid #e6ad4d33;border-radius:6px;padding:10px 12px}
+
+  /* sub-signals */
+  .sigs{display:grid;grid-template-columns:1fr;gap:9px;margin-top:18px}
+  @media(min-width:520px){.sigs{grid-template-columns:1fr 1fr}}
+  .sig{border:1px solid var(--line);border-radius:6px;padding:11px 13px;background:#ffffff04}
+  .sig-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .sig-name{font-size:.9rem;font-weight:700}
+  .sig-v{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--ink)}
+  .sig-stat{font-size:.76rem;color:var(--dim);margin:3px 0 8px}
+  .sig-bar{height:6px;border-radius:3px;background:#ffffff12;overflow:hidden}
+  .sig-bar i{display:block;height:100%;border-radius:3px}
+
+  /* ── SECTIONS ── */
+  .sec{padding:40px 0 4px;border-top:1px solid var(--line);margin-top:38px}
+  .sec-k{font-family:var(--mono);font-size:.74rem;font-weight:700;
+    color:var(--float);letter-spacing:.18em}
+  .sec-h{font-family:var(--sans);font-weight:700;
+    font-size:clamp(1.32rem,5vw,1.74rem);line-height:1.3;margin:8px 0 6px}
+  .sec-sub{color:var(--dim);font-size:.96rem;margin-bottom:22px}
+
+  .card{border:1px solid var(--line);border-radius:6px;background:#ffffff04;
+    padding:18px 16px;margin-bottom:14px}
+  .card-t{font-size:.94rem;font-weight:700;margin-bottom:14px;display:flex;
+    align-items:center;gap:9px}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none}
+
+  /* comparison bars */
+  .cmp{display:flex;flex-direction:column;gap:11px}
+  .cmp-row{display:grid;grid-template-columns:64px 1fr;gap:11px;align-items:center}
+  .cmp-yr{font-family:var(--mono);font-size:.78rem;color:var(--dim);text-align:right}
+  .cmp-bar{position:relative;height:30px;border-radius:5px;background:#ffffff09;overflow:hidden}
+  .cmp-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;
+    display:flex;align-items:center;justify-content:flex-end;padding-right:10px;
+    font-family:var(--mono);font-weight:700;font-size:.8rem;color:#0a0e1a;white-space:nowrap}
+  .cmp-cap{font-size:.8rem;color:var(--dim);margin-top:10px}
+  .cmp-cap b{color:var(--orbit)}
+
+  /* rate steps */
+  .steps{display:flex;align-items:flex-end;gap:6px;margin-top:4px}
+  .step{flex:1;text-align:center}
+  .step .pill{border-radius:5px;font-family:var(--mono);font-weight:700;
+    font-size:.84rem;padding:9px 4px;color:#0a0e1a}
+  .step .lab{font-size:.68rem;color:var(--dim);margin-top:7px;line-height:1.4}
+  .step .arrow{color:var(--faint)}
+
+  /* depreciation svg */
+  .chart-note{font-size:.78rem;color:var(--faint);margin-top:10px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.8rem;color:var(--dim);margin-top:12px}
+  .legend span{display:flex;align-items:center;gap:7px}
+  .legend i{width:16px;height:3px;border-radius:2px;display:inline-block}
+  .insight{margin-top:16px;border-left:2px solid var(--orbit);padding:2px 0 2px 13px;
+    font-size:.92rem}
+  .insight b{color:var(--orbit)}
+
+  /* float decision cards */
+  .floats{display:grid;grid-template-columns:1fr;gap:12px}
+  .fcard{border:1px solid var(--line2);border-radius:6px;padding:16px;
+    background:linear-gradient(180deg,#19213c,#141b30)}
+  .fcard-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .fcard-h .n{font-family:var(--mono);font-weight:700;color:var(--float);font-size:.9rem}
+  .fcard-h .t{font-weight:700;font-size:1rem}
+  .fcard p{font-size:.9rem;color:var(--dim)}
+  .fcard p b{color:var(--ink)}
+  .miniscale{height:7px;border-radius:4px;margin-top:12px;
+    background:linear-gradient(90deg,#2f3a5e,var(--float) 50%,var(--orbit));position:relative}
+  .miniscale .lo,.miniscale .hi{position:absolute;top:10px;font-size:.66rem;color:var(--faint);font-family:var(--mono)}
+  .miniscale .lo{left:0} .miniscale .hi{right:0}
+
+  /* takeaways */
+  .takes{list-style:none;display:flex;flex-direction:column;gap:12px}
+  .take{display:flex;gap:13px;align-items:flex-start;font-size:.98rem}
+  .take .b{font-family:var(--mono);font-weight:700;color:var(--orbit);
+    flex:none;line-height:1.7}
+  .take b{color:var(--ink)} .take .blue{color:var(--float);font-weight:700}
+
+  /* footer */
+  .foot{margin-top:46px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:.78rem;color:var(--faint);line-height:1.7}
+  .foot .src{color:var(--dim)}
+  .foot-brand{display:flex;align-items:center;gap:10px;margin-top:18px;
+    font-family:var(--mono);font-size:.74rem;color:var(--dim);flex-wrap:wrap}
+  .foot-brand .bf{color:var(--orbit);font-weight:700}
+  .foot-brand .sep{color:var(--line2)}
+  .foot-brand .o{color:var(--float);font-weight:700;letter-spacing:.04em}
+
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @keyframes tayutai{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="ceil">
+      <span class="ceil-tag">資産価値レイヤー / STOCK</span>
+      <span class="ceil-line"></span>
+      <span class="ceil-tag" style="color:var(--orbit)">天井</span>
+    </div>
+    <div class="hero-head">
+      <h1 class="hero-title">おうちの天井<span class="gloss">ouchi-no-tenjo</span></h1>
+      <div class="vstrip">資産の上限</div>
+    </div>
+    <p class="lede">「買い時？」を <b>◯✗</b> で決めない一枚。<br>家の天井＝<b>価格の天井</b>＝資産として見たときの上限を、データで見る。</p>
+    <div class="pair">
+      <span class="chip flow"><b>わたしのお財布</b>＝毎月のフロー</span>
+      <span class="arrow">↕</span>
+      <span class="chip stock"><b>おうちの天井</b>＝家というストック</span>
+    </div>
+  </header>
+
+  <!-- SIGNATURE: 天井度メーター -->
+  <section class="gauge" aria-label="天井度メーター">
+    <div class="gauge-top">
+      <div class="gauge-label">いまの<span class="k">天井度</span><br><span style="font-size:.74rem;color:var(--faint)">osakenpiro式・合成スコア（下の5サインの平均）</span></div>
+      <div class="gauge-score">0.76<small>/1.00</small></div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-track"><span class="bar-mark"></span></div>
+      <div class="bar-scale"><span>0.0</span><span>0.5</span><span>1.0</span></div>
+      <div class="bar-zones"><span>おだやか</span><span>中立</span><span class="hot">てっぺん寄り</span></div>
+    </div>
+    <p class="gauge-note">価格は<b>最高値圏</b>。出来高は減り、在庫は増え、金利は上昇。<b>"てっぺん寄り"のサインが複数</b>そろっている。</p>
+    <p class="caveat">⚠ ただし供給減・建築費高で「下がらない」説も有力。これは"危険度"ではなく<b>"てっぺん寄り度"</b>。下がるかどうかは専門家でも見方が割れていて、断定はできない。</p>
+
+    <div class="sigs">
+      <div class="sig"><div class="sig-h"><span class="sig-name">価格水準</span><span class="sig-v">0.9</span></div><div class="sig-stat">中古㎡単価がバブル期超え（都区部136万/㎡）</div><div class="sig-bar"><i style="width:90%;background:var(--red)"></i></div></div>
+      <div class="sig"><div class="sig-h"><span class="sig-name">出来高</span><span class="sig-v">0.8</span></div><div class="sig-stat">新築 発売戸数 前年比 −35.5%</div><div class="sig-bar"><i style="width:80%;background:var(--coral)"></i></div></div>
+      <div class="sig"><div class="sig-h"><span class="sig-name">在庫</span><span class="sig-v">0.6</span></div><div class="sig-stat">8か月ぶりに増加へ転換</div><div class="sig-bar"><i style="width:60%;background:var(--orbit)"></i></div></div>
+      <div class="sig"><div class="sig-h"><span class="sig-name">高級帯の勢い</span><span class="sig-v">0.7</span></div><div class="sig-stat">都心6区が37か月ぶり下落</div><div class="sig-bar"><i style="width:70%;background:var(--coral)"></i></div></div>
+      <div class="sig"><div class="sig-h"><span class="sig-name">金利</span><span class="sig-v">0.8</span></div><div class="sig-stat">30年ぶり高水準＋利上げ継続</div><div class="sig-bar"><i style="width:80%;background:var(--coral)"></i></div></div>
+    </div>
+  </section>
+
+  <!-- ① 現在地 -->
+  <section class="sec">
+    <div class="sec-k">DATA 01</div>
+    <h2 class="sec-h">データで見る現在地</h2>
+    <p class="sec-sub">いま価格は「過去いちばん高い」レンジ。でも勢い（出来高）は失速し、金利は底から上がり始めた。</p>
+
+    <div class="card">
+      <div class="card-t"><span class="dot" style="background:var(--red)"></span>価格は最高値圏（都区部・新築マンション平均）</div>
+      <div class="cmp">
+        <div class="cmp-row"><span class="cmp-yr">2018年度</span><div class="cmp-bar"><i style="width:63%;background:linear-gradient(90deg,var(--float-deep),var(--float))">7,320万円</i></div></div>
+        <div class="cmp-row"><span class="cmp-yr">2024年度</span><div class="cmp-bar"><i style="width:100%;background:linear-gradient(90deg,var(--orbit),var(--coral))">1億1,632万円</i></div></div>
+      </div>
+      <p class="cmp-cap">6年で<b>約1.6倍（＋約6割）</b>。首都圏中古の成約㎡単価も86.34万円で、バブル期の最高値を超えた水準。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-t"><span class="dot" style="background:var(--coral)"></span>でも勢いは失速（首都圏・新築の発売戸数 ＝ 都区部）</div>
+      <div class="cmp">
+        <div class="cmp-row"><span class="cmp-yr">2018年度</span><div class="cmp-bar"><i style="width:100%;background:linear-gradient(90deg,var(--float-deep),var(--float))">15,452戸</i></div></div>
+        <div class="cmp-row"><span class="cmp-yr">2024年度</span><div class="cmp-bar"><i style="width:54%;background:linear-gradient(90deg,var(--grey),var(--coral))">8,272戸</i></div></div>
+      </div>
+      <p class="cmp-cap">供給は<b>ほぼ半減</b>。「高くて買えない」局面では、まず取引の数が減り、在庫が積み上がる ＝ 天井のサイン。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-t"><span class="dot" style="background:var(--orbit)"></span>金利は底から上昇局面（日銀 政策金利）</div>
+      <div class="steps">
+        <div class="step"><div class="pill" style="height:34px;line-height:16px;background:linear-gradient(180deg,#4a5780,#37436a);color:var(--ink)">〜0%台</div><div class="lab">2024/3まで<br>マイナス金利</div></div>
+        <div class="step" style="flex:0 0 16px"><div class="arrow">→</div></div>
+        <div class="step"><div class="pill" style="height:52px;line-height:34px;background:linear-gradient(180deg,var(--float),var(--float-deep));color:var(--ink)">0.75%</div><div class="lab">2025/12<br>30年ぶり高水準</div></div>
+        <div class="step" style="flex:0 0 16px"><div class="arrow">→</div></div>
+        <div class="step"><div class="pill" style="height:64px;line-height:46px;background:linear-gradient(180deg,var(--orbit),#c98a2f)">1.0%</div><div class="lab">2026/6<br>利上げ見込み</div></div>
+        <div class="step" style="flex:0 0 16px"><div class="arrow">→</div></div>
+        <div class="step"><div class="pill" style="height:76px;line-height:58px;background:linear-gradient(180deg,var(--coral),#b24d28)">変動↑</div><div class="lab">2026/10<br>各行 一斉+0.25%見込</div></div>
+      </div>
+      <p class="cmp-cap" style="margin-top:16px">シンクタンクは2026年中に<b>1.0〜1.5%</b>を想定。長いローンほど「途中で金利が上がる」前提で考える必要がある。</p>
+    </div>
+  </section>
+
+  <!-- ② 目減りカーブ -->
+  <section class="sec">
+    <div class="sec-k">DATA 02</div>
+    <h2 class="sec-h">家は"買った瞬間"から目減りする</h2>
+    <p class="sec-sub">建物は古くなる。だから「売っても元金が戻らない」は、特に<b style="color:var(--coral)">新築を高値で買ったとき</b>に強く効く。これが資産（ストック）の宿命。</p>
+
+    <div class="card">
+      <div class="card-t"><span class="dot" style="background:var(--violet)"></span>築年数で価値はどう減るか（新築時＝100・首都圏平均イメージ）</div>
+      <svg viewBox="0 0 600 300" width="100%" height="auto" role="img" aria-label="築年数別の価格目減りカーブ。築15年で約マイナス25%、築31年超で約マイナス60%。">
+        <!-- grid -->
+        <line x1="44" y1="24" x2="580" y2="24" stroke="#ffffff14" stroke-dasharray="3 5"/>
+        <line x1="44" y1="123.4" x2="580" y2="123.4" stroke="#ffffff0a"/>
+        <line x1="44" y1="189.7" x2="580" y2="189.7" stroke="#ffffff0a"/>
+        <line x1="44" y1="256" x2="580" y2="256" stroke="#ffffff20"/>
+        <!-- y labels -->
+        <text x="38" y="28" fill="#69739a" font-size="11" text-anchor="end" font-family="Space Mono">100</text>
+        <text x="38" y="127" fill="#69739a" font-size="11" text-anchor="end" font-family="Space Mono">70</text>
+        <text x="38" y="193" fill="#69739a" font-size="11" text-anchor="end" font-family="Space Mono">50</text>
+        <!-- gentle part (cooler) -->
+        <polyline points="151.2,96.9 204.8,106.9 258.4,123.4 312,149.9 365.6,189.7 419.2,216.3 472.8,222.9 580,239.4"
+          fill="none" stroke="#3d86db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- steep first 10y (hot) -->
+        <polyline points="44,24 97.6,63.8 151.2,96.9"
+          fill="none" stroke="#e2683a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- key dots -->
+        <circle cx="44" cy="24" r="4" fill="#eaeefa"/>
+        <circle cx="204.8" cy="106.9" r="4.5" fill="#e6ad4d" stroke="#0a0e1a" stroke-width="1.5"/>
+        <circle cx="376.3" cy="196.3" r="4.5" fill="#e44b4a" stroke="#0a0e1a" stroke-width="1.5"/>
+        <!-- annotations -->
+        <text x="212" y="100" fill="#e6ad4d" font-size="12.5" font-weight="700" font-family="Zen Kaku Gothic New">築15年 −25%</text>
+        <text x="384" y="190" fill="#e44b4a" font-size="12.5" font-weight="700" font-family="Zen Kaku Gothic New">築31年〜 −60%超</text>
+        <text x="60" y="50" fill="#e2683a" font-size="12" font-weight="700" font-family="Zen Kaku Gothic New">最初の10年が</text>
+        <text x="60" y="66" fill="#e2683a" font-size="12" font-weight="700" font-family="Zen Kaku Gothic New">いちばん急</text>
+        <!-- x labels -->
+        <text x="44" y="274" fill="#69739a" font-size="10.5" text-anchor="middle" font-family="Space Mono">築0</text>
+        <text x="151.2" y="274" fill="#69739a" font-size="10.5" text-anchor="middle" font-family="Space Mono">10</text>
+        <text x="258.4" y="274" fill="#69739a" font-size="10.5" text-anchor="middle" font-family="Space Mono">20</text>
+        <text x="365.6" y="274" fill="#69739a" font-size="10.5" text-anchor="middle" font-family="Space Mono">30</text>
+        <text x="472.8" y="274" fill="#69739a" font-size="10.5" text-anchor="middle" font-family="Space Mono">40</text>
+        <text x="580" y="274" fill="#69739a" font-size="10.5" text-anchor="middle" font-family="Space Mono">50</text>
+        <text x="312" y="292" fill="#69739a" font-size="10" text-anchor="middle" font-family="Space Mono">築年数（年）</text>
+      </svg>
+      <div class="legend">
+        <span><i style="background:#e2683a;height:4px"></i>急な目減り（〜築10年）</span>
+        <span><i style="background:#3d86db"></i>ゆるやかな目減り</span>
+      </div>
+      <p class="chart-note">イメージ図（首都圏平均・概算）。アンカーは実データ：新築〜築浅は築15年で約 −25%、築31年超で約 −60%以上（平均価格）。</p>
+
+      <div class="insight">
+        <b>新築 vs 中古は「新品/中古」の二択じゃなく、"目減り速度"のFloat。</b><br>
+        中古を買う＝この<b>最初の急な坂を、前の持ち主が払い済み</b>ということ。一般に「築25年以内」が売り時で、築26年を超えると買い手が急に減る。家賃も年率およそ1%で下がっていく。
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ Boolean→Float -->
+  <section class="sec">
+    <div class="sec-k">FRAME 03</div>
+    <h2 class="sec-h">Boolean → Float で決める</h2>
+    <p class="sec-sub">「買う／買わない」は二択（Boolean）。でも本当の問いは、連続値（Float）で測る3つ。</p>
+    <div class="floats">
+      <div class="fcard">
+        <div class="fcard-h"><span class="n">F1</span><span class="t">売っても残債を割らない度</span></div>
+        <p><b>駅近・流動性が高いほど高い。</b>高値圏で買っても、ここが高ければ「売ったら大損」のリスクは小さい。逆に、いつでも売れる物件かどうかが資産の生命線。</p>
+        <div class="miniscale"><span class="lo">割れる</span><span class="hi">割れない</span></div>
+      </div>
+      <div class="fcard">
+        <div class="fcard-h"><span class="n">F2</span><span class="t">金利+1.25%でも返せる度</span></div>
+        <p><b>変動で組むなら、金利が +1.25% 上がった返済額でストレステスト。</b>それで家計が赤字になるなら、いまの返済額が"借りすぎ"のサイン。手取りに対する返済の割合（目安2〜2.5割）で見る。</p>
+        <div class="miniscale"><span class="lo">苦しい</span><span class="hi">余裕</span></div>
+      </div>
+      <div class="fcard">
+        <div class="fcard-h"><span class="n">F3</span><span class="t">ストックで選ぶ／フローで選ぶ度</span></div>
+        <p><b>「資産が増えるか」と「毎月ラクか」は別レイヤー。</b>地方の広い土地は"生活のラクさ（フロー）"には効くが、"値上がり（ストック）"は別問題——人口減は郊外を直撃しやすい。<b>お財布（フロー）と天井（ストック）を必ず2枚並べて見る。</b></p>
+        <div class="miniscale"><span class="lo">フロー重視</span><span class="hi">ストック重視</span></div>
+      </div>
+    </div>
+    <div class="insight" style="border-color:var(--teal)">
+      すでに持っている土地に建てる＝<b style="color:var(--teal)">土地代ゼロは理にかなう</b>。ただし「だから値上がりする」は別の話。"持ち地を活かす"と"資産として増える"は、混ぜないこと。
+    </div>
+  </section>
+
+  <!-- ④ 指針 -->
+  <section class="sec">
+    <div class="sec-k">TAKEAWAY 04</div>
+    <h2 class="sec-h">この一枚の結論</h2>
+    <ul class="takes">
+      <li class="take"><span class="b">01</span><span>価格は<b>最高値圏</b>。"てっぺん寄り"のサインは複数ある。でも「下がらない」説も有力で、<b>断定はできない</b>。</span></li>
+      <li class="take"><span class="b">02</span><span>だから<span class="blue">「ピークだから買うな」</span>も<span class="blue">「夢のマイホームだから買え」</span>も、どっちも二択思考。Floatで見る。</span></li>
+      <li class="take"><span class="b">03</span><span>選ぶ基準は<b>「いつ売っても残債を割らない物件か」</b>。駅近・流動性が高いほど、高値圏でもリスクは小さい。</span></li>
+      <li class="take"><span class="b">04</span><span>変動で組むなら<b>金利+1.25%でストレステスト</b>。そして<b>お財布（フロー）と天井（ストック）を2枚並べて</b>家族で見る。</span></li>
+    </ul>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <div class="src">データ時点：2026年前半（首都圏・東京）。出典：不動産経済研究所、東日本不動産流通機構（レインズ）、国土交通省、東京カンテイ、日本銀行ほかの公開統計より作成。数値は平均・概算を含み、エリア・物件で大きく異なる。</div>
+    <div style="margin-top:10px">これは投資助言ではありません。最終判断はご本人と、必要なら専門家（ファイナンシャルプランナー等）に。市場の見方が割れている以上、「下がる」前提で全張りするのも同じくらいリスク。</div>
+    <div class="foot-brand">
+      <span class="o">osakenpiro</span><span class="sep">/</span><span class="bf">Boolean→Float</span><span class="sep">/</span><span>#全人類UX改善計画</span>
+    </div>
+    <div style="margin-top:8px;font-family:var(--mono);font-size:.72rem;color:var(--faint)">対になる一枚：わたしのお財布（毎月のフロー編）</div>
+  </footer>
+
+</div>
+</body>
+</html>
